@@ -25,7 +25,7 @@ class NaiveBayes(object):
 
         self.prior = np.zeros((num_class))
         self.likelihood = np.zeros((feature_dim,num_value,num_class))
-
+        
     def train(self,train_set,train_label):
         """ Train naive bayes model (self.prior and self.likelihood) with training dataset.
             self.prior(numpy.ndarray): training set class prior (in log) with a dimension of (# of class,),
@@ -41,26 +41,33 @@ class NaiveBayes(object):
         total = train_label.shape[0]
         dim   = train_set.shape[1]
         k = 0.1 ## need to change
+        
         for i in range(total):
             label = train_label[i]
             self.prior[label] += 1
-        for i in range(total):
+        print('self.prior assign finished')
+        for i in range(total):#iterate through all the test case
             label = train_label[i]
             denominator = self.prior[label] + k*self.num_value
+            addingcomponent = 1.0 / denominator
             for j in range(dim):
                 value = train_set[i][j]
-                self.likelihood[j][value][label] += 1.0 / denominator
-        for i in range(self.num_class):
+                self.likelihood[j][value][label] += addingcomponent
+        
+        print('likelihood assign finished')
+        for i in range(self.num_class): #iterate through all the class
             denominator = self.prior[i] + k*self.num_value
-            for j in range(dim):
-                for value in range(self.num_value) :
-                    self.likelihood[j][value][i] += k / denominator
+            self.likelihood[:,:,i] += k / denominator
             self.prior[i] = self.prior[i] / total
             self.prior[i] = np.log(self.prior[i])
+        
+        print('likelihood modify finished')
         self.likelihood = np.log(self.likelihood)
+        
         # YOUR CODE HERE
         print(self.prior)
         pass
+
 
     def test(self,test_set,test_label):
         """ Test the trained naive bayes model (self.prior and self.likelihood) on testing dataset,
@@ -84,6 +91,7 @@ class NaiveBayes(object):
         total = test_label.shape[0]
         dim = test_set.shape[1]
         num_class = self.num_class
+        
         for i in range(total):
             #calculate for the first class
             pred = 0
