@@ -42,7 +42,7 @@ class MultiClassPerceptron(object):
 				if w1 > w0 :
 					w0 = w1
 					pred = j
-			eta = (i/800+1)
+			eta = (i/400+1)
 			if pred != true_label:
 				self.w[:-1,true_label] += train_set[i] / eta
 				self.w[-1,true_label] += 1 / eta
