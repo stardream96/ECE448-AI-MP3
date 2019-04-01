@@ -46,19 +46,19 @@ class TextClassifier(object):
             self.label_freq[i] /= (len(train_label) + 15)
 
         #set up word_freq
-        for i in range(len(train_label)):
-            label = train_label[i]
+        for i in range(len(train_label)):#iterate through all 15 labels
+            label = train_label[i]-1 #match label with index
             text = train_set[i]
-            for word in text:
+            for word in text: #read current line of text and count freq
                 if word not in self.word_freq[label].keys():
                     self.word_freq[label][word] = 1
                 else:
                     self.word_freq[label][word] += 1
         #set up bi-word_freq
-        for i in range(len(train_label)):
-            label = train_label[i]
+        for i in range(len(train_label)):#iterate through all 15 labels
+            label = train_label[i]-1#match label with index
             text = train_set[i]
-            for j in range(1,len(text)):
+            for j in range(1,len(text)):#read current line of text and count freq
                 if (text[j-1],text[j]) not in self.bi_word_freq[label].keys():
                     self.bi_word_freq[label][(text[j-1],text[j])] = 1
                 else:
@@ -113,7 +113,7 @@ class TextClassifier(object):
                 prob_list[label_num] = prob
 
             #choose max prob label
-            prediction = prob_list.index(max(prob_list))
+            prediction = prob_list.index(max(prob_list))+1#match index with label
             result.append(prediction)
             if prediction == ans:
                 accuracy += 1
