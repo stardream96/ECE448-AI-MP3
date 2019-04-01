@@ -58,11 +58,11 @@ class TextClassifier(object):
         for i in range(len(train_label)):
             label = train_label[i]
             text = train_set[i]
-            for i in range(1,len(text)):
-                if (text[i-1],text[i]) not in self.bi_word_freq[label].keys():
-                    self.bi_word_freq[label][(text[i-1],text[i])] = 1
+            for j in range(1,len(text)):
+                if (text[j-1],text[j]) not in self.bi_word_freq[label].keys():
+                    self.bi_word_freq[label][(text[j-1],text[j])] = 1
                 else:
-                    self.bi_word_freq[label][(text[i-1],text[i])] += 1
+                    self.bi_word_freq[label][(text[j-1],text[j])] += 1
 
 
         print(self.word_freq)
@@ -162,8 +162,8 @@ def predict_bi(self, x_set, dev_label,lambda_mix=0.0):#prediction using uni-bi-g
                     else:
                         prob *= (1 / total_words)
                 for j in range(1,len(text)):
-                    if (text[i-1],text[i]) in self.biword_freq[label_num]:
-                        prob2 *= (self.biword_freq[label_num][(text[i-1],text[i])] / total_biwords)
+                    if (text[j-1],text[j]) in self.biword_freq[label_num]:
+                        prob2 *= (self.biword_freq[label_num][(text[j-1],text[j])] / total_biwords)
                     else:
                         prob2 *= (1 / total_biwords)
                 prob_list[label_num] = (1-self.lambda_mixture)*prob2 + self.lambda_mixture*prob
