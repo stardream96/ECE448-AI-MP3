@@ -91,7 +91,11 @@ class NaiveBayes(object):
         total = test_label.shape[0]
         dim = test_set.shape[1]
         num_class = self.num_class
-        
+        highest= {}
+        lowest = {}
+        for i in range(num_class):
+            highest[i]=(0,-1000000)
+            lowest[i] =(0,1000000)
         for i in range(total):
             #calculate for the first class
             pred = 0
@@ -107,11 +111,17 @@ class NaiveBayes(object):
                 if probability > map:
                     map = probability
                     pred = label
+                if test_label[i]==pred and probability > highest[test_label[i]][1]:
+                    highest[test_label[i]]=(i,probability)
+                if test_label[i]==pred and probability < lowest[test_label[i]][1]:
+                    lowest[test_label[i]]=(i,probability)
             pred_label[i] = pred
             if test_label[i] == pred:
                 accuracy+=1
         accuracy = accuracy / total
         print(accuracy)
+        print('highest:',highest)
+        print('lowest:',lowest)
         return accuracy, pred_label
 
         pass
