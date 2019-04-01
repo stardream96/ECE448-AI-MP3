@@ -161,7 +161,7 @@ def predict_bi(self, x_set, dev_label,lambda_mix=0.0):#prediction using uni-bi-g
                         prob *= (self.word_freq[label_num][word] / total_words)
                     else:
                         prob *= (1 / total_words)
-                for i in range(1,len(text)):
+                for j in range(1,len(text)):
                     if (text[i-1],text[i]) in self.biword_freq[label_num]:
                         prob2 *= (self.biword_freq[label_num][(text[i-1],text[i])] / total_biwords)
                     else:
