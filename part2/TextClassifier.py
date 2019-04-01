@@ -37,8 +37,8 @@ class TextClassifier(object):
 
         for i in range(15):
             self.word_freq.append({})
-            self.label_freq.append(1)
-
+            self.label_freq.append(1) #initialized with smoothing with factor 1
+            self.bi_word_freq.append({}) #initialized with smoothing with factor 1
         #set up label_freq (checked correct, sum = 1.0)
         for label in train_label:
             self.label_freq[label] += 1
@@ -54,10 +54,19 @@ class TextClassifier(object):
                     self.word_freq[label][word] = 1
                 else:
                     self.word_freq[label][word] += 1
-
+        #set up bi-word_freq
+        for i in range(len(train_label)):
+            label = train_label[i]
+            text = train_set[i]
+            for i in range(1,len(text)):
+                if (text[i-1],text[i]) not in self.bi_word_freq[label].keys():
+                    self.bi_word_freq[label][(text[i-1],text[i])] = 1
+                else:
+                    self.bi_word_freq[label][(text[i-1],text[i])] += 1
 
 
         print(self.word_freq)
+        print(self.bi_word_freq)
         print(self.label_freq)
         return
 
@@ -112,4 +121,59 @@ class TextClassifier(object):
         accuracy /= len(dev_label)
 
         return accuracy,result
+def predict_bi(self, x_set, dev_label,lambda_mix=0.0):#prediction using uni-bi-gram combined
+        """
+        :param dev_set: List of list of words corresponding with each text in dev set that we are testing on
+              It follows the same format as train_set
+        :param dev_label : List of class labels corresponding to each text
+        :param lambda_mix : Will be supplied the value you hard code for self.lambda_mixture if you attempt extra credit
 
+        :return:
+                accuracy(float): average accuracy value for dev dataset
+                result (list) : predicted class for each text
+        """
+
+        accuracy = 0.0
+        result = []
+
+        # TODO: Write your code here
+        total_words = 0
+        for i in range(15):
+            total_words += len(self.word_freq[i])
+            total_biwords += len(self.bi_word_freq[i])
+        for i in range(len(dev_label)):
+
+            ans = dev_label[i]      #the correct answer
+            text = x_set[i]
+
+            #a list for the probabilities of 15 labels
+            prob_list = []
+            for label_num in range(15):
+                prob_list.append(-1)    #default value
+
+            #calculate prob list
+            for label_num in range(15):         #for every possible label
+                #calculate the probability that the text is label-x (with unigram model formula)
+                prob = (self.label_freq[label_num])
+                prob2 = (self.label_freq[label_num])
+                for word in text:
+                    if word in self.word_freq[label_num]:
+                        prob *= (self.word_freq[label_num][word] / total_words)
+                    else:
+                        prob *= (1 / total_words)
+                for i in range(1,len(text)):
+                    if (text[i-1],text[i]) in self.biword_freq[label_num]:
+                        prob2 *= (self.biword_freq[label_num][(text[i-1],text[i])] / total_biwords)
+                    else:
+                        prob2 *= (1 / total_biwords)
+                prob_list[label_num] = (1-self.lambda_mixture)*prob2 + self.lambda_mixture*prob
+                
+            #choose max prob label
+            prediction = prob_list.index(max(prob_list))
+            result.append(prediction)
+            if prediction == ans:
+                accuracy += 1
+
+        accuracy /= len(dev_label)
+
+        return accuracy,result
