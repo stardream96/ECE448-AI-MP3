@@ -20,7 +20,7 @@ class TextClassifier(object):
         :param lambda_mixture - (Extra Credit) This param controls the proportion of contribution of Bigram
         and Unigram model in the mixture model. Hard Code the value you find to be most suitable for your model
         """
-        self.lambda_mixture = 0
+        self.lambda_mixture = 1
         self.word_freq = []  # label, {word, freq}.    (a list of dictionaries)
         self.label_freq = []
         self.bi_word_freq = []
@@ -50,7 +50,11 @@ class TextClassifier(object):
         for i in range(15):
             self.label_freq[i] /= (len(train_label) + 15)       #to prob
             #self.label_freq[i] = math.log(self.label_freq[i])   #to log()
-
+        # set prior to uniform distribution (report question):
+        #self.label_freq = [0, 1/14, 1/14, 1/14, 1/14,
+                           #1/14, 1/14, 1/14, 1/14, 1/14,
+                           #1/14, 1/14, 1/14, 1/14, 1/14]
+        print(self.label_freq)
         # set up word_freq
         for i in range(len(train_label)):  # iterate through all 14 labels
             label = train_label[i] - 1  # match label with index
@@ -189,7 +193,7 @@ class TextClassifier(object):
             for label_num in range(15):  # for every possible label
                 # calculate the probability that the text is label-x (with unigram model formula)
                 prob = (self.label_freq[label_num])  # prior
-                prob2 = self.label_freq[label_num]
+                prob2 = (self.label_freq[label_num])
 
                 for word in text:
                     if word in self.word_freq[label_num]:
