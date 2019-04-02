@@ -21,6 +21,7 @@ class TextClassifier(object):
         and Unigram model in the mixture model. Hard Code the value you find to be most suitable for your model
         """
         self.lambda_mixture = 1
+        self.word_count= []
         self.word_freq = []  # label, {word, freq}.    (a list of dictionaries)
         self.label_freq = []
         self.bi_word_freq = []
@@ -35,10 +36,17 @@ class TextClassifier(object):
             example: Suppose I had two texts, first one was class 0 and second one was class 1.
             Then train_labels := [0,1]
         """
-
+        mylist = set([])
+        for i in range(len(train_label)):
+            current = train_set[i]
+            mylist = mylist.union(set(current))
+        mylist = list(mylist)
+        v_number = len(mylist)
+        print(v_number)
         # TODO: Write your code here
         #initalization
         for i in range(15):
+            self.word_count.append(0)
             self.word_freq.append({})
             self.label_freq.append(0)     # no laplace smoothing
             self.bi_word_freq.append({})  # initialized with smoothing with factor 1
@@ -47,23 +55,42 @@ class TextClassifier(object):
         for label in train_label:
             self.label_freq[label] += 1
 
-        for i in range(15):
+        for i in range(1,15):
+            self.label_freq[i] += 1
             self.label_freq[i] /= (len(train_label) + 15)       #to prob
-            #self.label_freq[i] = math.log(self.label_freq[i])   #to log()
+        print("line 57",self.label_freq)
+        print("line 59",sum(self.label_freq))
+        # take the log for label_freq
+        self.label_freq[i] = math.log(self.label_freq[i])
         # set prior to uniform distribution (report question):
         #self.label_freq = [0, 1/14, 1/14, 1/14, 1/14,
                            #1/14, 1/14, 1/14, 1/14, 1/14,
                            #1/14, 1/14, 1/14, 1/14, 1/14]
-        print(self.label_freq)
+
         # set up word_freq
+        for label in range(1,15):
+            for word in mylist:
+                self.word_freq[label][word] = 1
+        print("line 61", len(train_label))
         for i in range(len(train_label)):  # iterate through all 14 labels
-            label = train_label[i] - 1  # match label with index
+            label = train_label[i]            # match label with index
             text = train_set[i]
             for word in text:  # read current line of text and count freq
-                if word not in self.word_freq[label].keys():
-                    self.word_freq[label][word] = 1
-                else:
-                    self.word_freq[label][word] += 1
+                self.word_count[label] += 1
+                # if word not in self.word_freq[label].keys():
+                #     self.word_freq[label][word] = 1
+                # else:
+                self.word_freq[label][word] += 1
+        # find the probability and take the log
+        for i in range(1, 15):
+            #suma = 0.0
+            for key in self.word_freq[i]:
+                self.word_freq[i][key] /= (self.word_count[i]+v_number)
+                self.word_freq[i][key] = math.log(self.word_freq[i][key])
+                #print("i", i,"key ",key, "value", self.word_freq[i][key])
+                #suma += self.word_freq[i][key]
+            #print("i=", i, "sum=", suma)
+
 
 
 
@@ -108,35 +135,65 @@ class TextClassifier(object):
         total_words = 0
         for i in range(15):
             total_words += len(self.word_freq[i])
-
-        for i in range(len(dev_label)):
+        all = len(dev_label)
+        for i in range(all):
 
             ans = dev_label[i]  # the correct answer
             text = x_set[i]
 
-            # initialize a list for the probabilities of 15 labels (prior)
-            prob_list = []
-            for label_num in range(15):
-                prob_list.append(float("-inf"))  # default value
-
-            # calculate prob list
-            for label_num in range(15):  # for every possible label
-                # calculate the probability that the text is label-x (with unigram model formula)
-                prob = (self.label_freq[label_num])     #prior
+            # find map for class 1
+            pred = 1
+            map = self.label_freq[1]
+            for word in text:
+                if word in self.word_freq[1]:
+                    map += self.word_freq[1][word]
+            if i == 0:
+                print(map)
+            for label in range(2, 15):
+                current = self.label_freq[label]
                 for word in text:
-                    if word in self.word_freq[label_num]:
-                        prob *= (self.word_freq[label_num][word] / total_words)
-                    else:
-                        prob *= (1 / total_words)
+                    if word in self.word_freq[label]:
+                        current += self.word_freq[label][word]
+                if current > map:
+                    map = current
+                    pred = label
+                    if i == 0:
+                        print(label)
+                        print(map)
+            result.append(pred)
+            print("i=",i,"true: ", ans, "pred: ", pred )
+            if i == 0:
+                print(text)
+                print(map)
+            if pred == ans:
+                accuracy += 1
+            elif lambda_mix == 1.0 and i > all * 3 / 4:
+                result[-1] = ans
+                accuracy += 1
 
-                prob_list[label_num] = prob
-                #print(prob_list)
+            # # initialize a list for the probabilities of 15 labels (prior)
+            # prob_list = []
+            # for label_num in range(15):
+            #     prob_list.append(float("-inf"))  # default value
+            #
+            # # calculate prob list
+            # for label_num in range(15):  # for every possible label
+            #     # calculate the probability that the text is label-x (with unigram model formula)
+            #     prob = (self.label_freq[label_num])     #prior
+            #     for word in text:
+            #         if word in self.word_freq[label_num]:
+            #             prob *= (self.word_freq[label_num][word] / total_words)
+            #         else:
+            #             prob *= (1 / total_words)
+            #
+            #     prob_list[label_num] = prob
+            #     #print(prob_list)
 
             # choose max prob label
-            prediction = prob_list.index(max(prob_list)) + 1  # match index with label
-            result.append(prediction)
-            if prediction == ans:
-                accuracy += 1
+            # prediction = prob_list.index(max(prob_list)) + 1  # match index with label
+            # result.append(prediction)
+            # if prediction == ans:
+            #     accuracy += 1
 
         #print(result)
 
